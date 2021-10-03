@@ -19,25 +19,22 @@ SELECT   product_id, product_name FROM products WHERE discontinued=1 ORDER BY pr
 -- Part 2: Orders
 
 -- Select the date of each customer's first order and its corresponding customer ID; sort by customer ID.
-SELECT DISTINCT ON(customer_id) order_date , customer_id
+SELECT MIN(order_date) , customer_id
 FROM orders
-ORDER BY customer_id , order_date;
+GROUP BY customer_id
+ORDER BY customer_id ;
 
 -- Same as previous query, but name the column of date values "first_order_date".
-SELECT DISTINCT ON(customer_id) order_date as first_order_date , customer_id
+SELECT MIN(order_date) AS first_order_date, customer_id
 FROM orders
-ORDER BY customer_id , first_order_date;
+GROUP BY customer_id
+ORDER BY customer_id ;
 
 -- Same as previous query, but sort by first_order_date instead of customer ID.
-WITH  first_orders AS (SELECT
-DISTINCT ON (customer_id)
-order_date as first_order_date , customer_id
+SELECT MIN(order_date) AS first_order_date, customer_id
 FROM orders
-ORDER BY customer_id, first_order_date)
-SELECT *
-FROM first_orders
+GROUP BY customer_id
 ORDER BY first_order_date;
-
 
 
 -- How many orders have been placed?
@@ -77,7 +74,7 @@ SELECT od.order_id, SUM(od.quantity * od.unit_price* (1-od.discount)) AS order_t
 FROM order_details od
 GROUP BY od.order_id
 ORDER BY order_total DESC
-LIMIT 50
+LIMIT 50;
 
 
 
@@ -87,32 +84,32 @@ LIMIT 50
 SELECT first_name, last_name
 FROM employees
 WHERE title = 'Sales Representative'
-ORDER BY last_name
+ORDER BY last_name;
 
 -- Get first name, last name, and notes for employees who don't have anyone to report to (i.e. their reports_to field is blank). Order by last name.
 SELECT first_name, last_name, notes
 FROM employees
 WHERE reports_to IS  NULL
-ORDER BY last_name
+ORDER BY last_name;
 
 -- Get first name, last name, and notes for employees who do have someone to report to. Order by last name.
 SELECT first_name, last_name, notes
 FROM employees
 WHERE reports_to IS  NOT NULL
-ORDER BY last_name
+ORDER BY last_name;
 
 -- Get first name and last name of the first employee to be hired in London.
 SELECT first_name, last_name
 FROM employees
 WHERE city ='London'
 ORDER BY hire_date
-LIMIT 1
+LIMIT 1;
 
 -- Get first name and home phone of employees whose first names begin with the letter 'A' and whose phone numbers contain the number '4'. Sort by last name.
 SELECT first_name, home_phone
 FROM employees
 WHERE first_name LIKE 'A%' AND home_phone LIKE '%4%'
-ORDER BY last_name
+ORDER BY last_name;
 
 -- Get city name and number of Sales Representatives in each city that contains at least 2 Sales Reps. Order by the number of Sales Reps.
 SELECT city, COUNT(*) as rep_ct
@@ -120,13 +117,13 @@ FROM employees
 WHERE title = 'Sales Representative'
 GROUP BY city
 HAVING COUNT(*) >= 2
-ORDER BY rep_ct DESC
+ORDER BY rep_ct DESC;
 
 -- Get first names, last names, and hire dates of employees who were hired in 1994; sort by hire date.
 SELECT first_name,last_name,hire_date
 FROM employees
 WHERE EXTRACT(YEAR FROM hire_date) = 1994
-ORDER BY hire_date
+ORDER BY hire_date;
 
 
 -- Part 4: Mix and Match
@@ -137,7 +134,7 @@ FROM products p
 JOIN categories c
 ON c.category_id = p.category_id
 WHERE p.product_name ILIKE 'C%'
-ORDER BY p.product_id
+ORDER BY p.product_id;
 
 -- Management wants a "call list" to check on customers who haven't ordered in a while.
 -- List contact names, contact titles, company names, phone numbers, and last order dates for no more than 10 customers; sort by last order date (least recent first).
@@ -172,26 +169,26 @@ SELECT ls.product_name, s.company_name, s.phone,ls.defecit
 FROM low_stock ls
 JOIN suppliers s
 ON s.supplier_id = ls.supplier_id
-ORDER BY defecit DESC
+ORDER BY defecit DESC;
 
 -- List company names of suppliers who have not shipped any orders; sort alphabetically.
 SELECT company_name
 FROM suppliers
 WHERE supplier_id IN
 (WITH up AS
-(SELECT od.product_id
-FROM orders o
-JOIN order_details od
-ON o.order_id = od.order_id
-WHERE o.shipped_date IS NULL
-GROUP BY od.product_id
-)
+	(SELECT od.product_id
+	FROM orders o
+	JOIN order_details od
+	ON o.order_id = od.order_id
+	WHERE o.shipped_date IS NULL
+	GROUP BY od.product_id
+	)
 SELECT p.supplier_id
 FROM products p
 JOIN up
 ON p.product_id = up.product_id
 GROUP BY p.supplier_id
-)
+);
 
 -- List region description, territory description, employee last name, and employees first name for each territory and region an employee works in.
 -- Remove duplicate results and sort first by region description, then territory description, then last name, and finally first name.
@@ -206,7 +203,7 @@ SELECT   t.territory_description, ert.last_name, ert.first_name
 FROM ert
 JOIN territories t
 ON t.territory_id = ert.territory_id
-GROUP BY t.territory_description, ert.last_name, ert.first_name
+GROUP BY t.territory_description, ert.last_name, ert.first_name;
 
 -- Get ALL U.S. state names and abbreviations, along with customer company names for customers based in the USA.
 -- If a state does not have any relate customers, fill in NULL for the company_name field. Order by state name.
@@ -229,7 +226,7 @@ SELECT  od.order_id, COUNT(od.product_id) AS product_count
 FROM order_details od
 GROUP BY od.order_id
 HAVING COUNT(*) > 5
-ORDER BY product_count DESC
+ORDER BY product_count DESC;
 
 -- Management needs a list of all suppliers and customers for their holiday greetings card!
 -- Provide a list with the company name, address, city, region, postal code, and country for all suppliers and customers.
