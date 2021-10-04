@@ -13,12 +13,13 @@
 -- Part 5: Mutations
 
 -- Management has decided it would like to designate employees as experts of zero or more categories, and they
--- want the database to keep track of who is an expert in what. 
--- Q: How will you satisfy this new requirement? 
--- A:
+-- want the database to keep track of who is an expert in what.
+-- Q: How will you satisfy this new requirement?
+-- A: Create a employee_expertise (category) table, mattching each employee to a corresponding experise;
 -- Q: What type of relationship is this? (e.g. 1-1, 1-many, or many-to-many?)
--- A: 
+-- A: m-m
 -- Feel free to fill in the blanks above with a comment or two.
+-- I could also clearte an expretise table to standardize expertise category
 
 
 -- Create Table
@@ -27,25 +28,48 @@
 --   2. It has a employee_id column of type INTEGER
 --   3. It has a category_id column of type INTEGER
 --   4. Its primary key is a tuple of (employee_id, category_id) pairs
-
+CREATE TABLE employees_categories(
+    employee_id column INT NOT NULL,
+    category_id column INT NOT NULL,
+    PRIMARY KEY (employee_id, category_id)
+)
 
 -- Alter table
 -- Write a SQL statement that alters employees_categories to meet the following criteria:
 --   1. employee_id is a foreign key which references the employees table
 --   2. category_id is a foreign key which references the categories table
+ALTER TABLE employees_categories
+    ADD CONSTRAINT fk_employees_categories
+	FOREIGN KEY (employee_id)
+	REFERENCES employees;
 
+ALTER TABLE employees_categories
+    ADD CONSTRAINT fk_categories_employees
+	FOREIGN KEY (category_id)
+	REFERENCES categories;
 
 -- Insert records
 -- Write a query that inserts the following employee ID, category ID pairs into employees_categories:
 -- (1,2) (3,4) (4,3) (4,4) (8,2) (1,8) (1,3) (1,6)
-
+INSERT INTO employees_categories
+(employee_id, category_id)
+VALUES
+(1,2), (3,4), (4,3), (4,4), (8,2), (1,8), (1,3), (1,6)
 
 -- Remove records
 -- Write query that deletes all rows from employees_categories but does not delete the employees_categories table itself.
-
+TRUNCATE TABLE employees_categories
 
 -- Challenge question: Write a query that assigns all employees of the London office to be experts in the Dairy Products category.
-
+INSERT INTO employees_categories
+(employee_id, category_id)
+	SELECT e.employee_id, c.category_id
+	FROM employees e
+	LEFT JOIN
+	categories c
+	ON c.category_name ='Dairy Products'
+	WHERE e.city= 'London'
 
 -- Delete table
 -- Write a query to delete the employees_categories table
+DROP TABLE employees_categories
